@@ -1,4 +1,3 @@
-import { db } from "./../db/db.mjs"
 import mongoose from "mongoose"
 import { Event } from "../../models/event.js"
 import { User } from "../../models/user.js"
@@ -18,7 +17,7 @@ export const Query = {
             throw error
         }
     },
-    eventById : async (parent, args, context, info) => {
+    eventById : async (args) => {
         try {
             const id = new mongoose.Types.ObjectId(args.id)
             const event = await Event.findById(id).exec()
@@ -30,7 +29,7 @@ export const Query = {
             throw error
         }
     },
-    users: async (parent, args, context, info) => {
+    users: async () => {
         try {
             const dbUsers = await User.find()
             return dbUsers.map(user => {
@@ -43,7 +42,7 @@ export const Query = {
             throw error
         }
     },
-    userById: async (parent, args, context, info) => {
+    userById: async (args) => {
         try {
             const id = new mongoose.Types.ObjectId(args.id)
             const user = await User.findById(id).exec()
@@ -55,7 +54,7 @@ export const Query = {
             throw error
         }
     },
-    organizers: async (parent, args, context, info) => {
+    organizers: async () => {
         try {
             const dbOrganizers = await Organizer.find()
             return dbOrganizers.map(organizer => {
@@ -68,7 +67,7 @@ export const Query = {
             throw error
         }
     },
-    organizerById: async (parent, args, context, info) => {
+    organizerById: async (args) => {
         try {
             const id = new mongoose.Types.ObjectId(args.id)
             const organizer = await Organizer.findById(id).exec()
