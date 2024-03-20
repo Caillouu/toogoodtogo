@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import './App.css'
+import { Toaster } from './components/ui/toaster'
+
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
+      <Toaster />
+
       <div>
       </div>
       <h1>Vite + React</h1>
