@@ -1,0 +1,76 @@
+enum EventStatusEnum {
+    WAITING
+    IN_PROGRESS
+    CANCELED
+    DONE
+}
+
+type Event {
+    _id: String!
+    place: String!
+    event: String!
+    organizers: [Organizer]!
+    dateStart: Int!
+    dateEnd: Int!
+    category: String!
+    description: String!
+    coordinates: [Float]!
+    status: EventStatusEnum!
+    createdAt: String!
+}
+
+type User {
+    _id: String!
+    name: String!
+    email: String!
+    events: [Event]
+}
+
+type Organizer {
+    _id: String!
+    name: String!
+    email: String!
+    events: [Event]
+}
+
+type Query {
+    events: [Event]!
+    eventById(id: String): Event!
+    users: [User]!
+    userById(id: String): User!
+    organizers: [Organizer]!
+    organizerById(id: String): Organizer!
+}
+
+type Mutation {
+    addEvent(addEventInput: EventAddInput): Event!
+    updateEvent(id: Int!, updateEventInput: EventUpdateInput!): Event!
+    deleteEvent(id: Int!): Event!
+}
+
+type Subscription {
+    event: Event!
+}
+
+input EventAddInput {
+    place: String!
+    event: String!
+    organizer: String!
+    dateStart: Int!
+    dateEnd: Int!
+    category: String!
+    description: String!
+    coordinates: [Float]!
+    status: EventStatusEnum!
+}
+
+input EventUpdateInput {
+    place: String
+    event: String
+    dateStart: Int
+    dateEnd: Int
+    category: String
+    description: String
+    coordinates: [Float]
+    status: EventStatusEnum
+}
