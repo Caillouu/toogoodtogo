@@ -4,24 +4,24 @@ import { User } from "../../models/user.js"
 import { Organizer } from "../../models/organizer.js"
 
 export const Query = {
-    events : async () => {
+    events: async (parent, args, context, info) => {
         try {
             const dbEvents = await Event.find()
             return dbEvents.map(event => {
                 return {
                     ...event._doc,
                     _id: event.id
-                }   
+                }
             })
         } catch (error) {
             throw error
         }
     },
-    eventById : async (args) => {
+    eventById: async (parent, args, context, info) => {
         try {
             const id = new mongoose.Types.ObjectId(args.id)
             const event = await Event.findById(id).exec()
-            if(!event) {
+            if (!event) {
                 throw new Error("Event ID not found")
             }
             return event
@@ -29,7 +29,7 @@ export const Query = {
             throw error
         }
     },
-    users: async () => {
+    users: async (parent, args, context, info) => {
         try {
             const dbUsers = await User.find()
             return dbUsers.map(user => {
@@ -42,11 +42,11 @@ export const Query = {
             throw error
         }
     },
-    userById: async (args) => {
+    userById: async (parent, args, context, info) => {
         try {
             const id = new mongoose.Types.ObjectId(args.id)
             const user = await User.findById(id).exec()
-            if(!user) {
+            if (!user) {
                 throw new Error("User ID not found")
             }
             return user
@@ -54,7 +54,7 @@ export const Query = {
             throw error
         }
     },
-    organizers: async () => {
+    organizers: async (parent, args, context, info) => {
         try {
             const dbOrganizers = await Organizer.find()
             return dbOrganizers.map(organizer => {
@@ -67,11 +67,13 @@ export const Query = {
             throw error
         }
     },
-    organizerById: async (args) => {
+    organizerById: async (parent, args, context, info) => {
+        console.log(args)
         try {
             const id = new mongoose.Types.ObjectId(args.id)
+            console.log(id)
             const organizer = await Organizer.findById(id).exec()
-            if(!organizer) {
+            if (!organizer) {
                 throw new Error("Organizer ID not found")
             }
             return organizer
