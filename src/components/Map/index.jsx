@@ -15,41 +15,16 @@ import { Link } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { useContext } from 'react'
 import { LocationContext } from '../../context/locationContext'
-import { useQuery, gql } from '@apollo/client';
 import './map.scss'
 
-const GET_EVENTS = gql`
-    query Events {
-        events {
-        _id
-        place
-        event
-        organizers {
-            _id
-            name
-            email
-        }
-        dateStart
-        dateEnd
-        category
-        description
-        coordinates
-        status
-        }
-    }
-`;
-
-
-export const Map = () => {
+export const Map = ({ events }) => {
     const { location } = useContext(LocationContext)
-    const data = useQuery(GET_EVENTS);
-    const events = data.data && data.data.events
+
     const optionsIcon = Leaflet.Icon.extend({
         options: {
             iconSize: [32, 32]
         }
     });
-    console.log(location);
     return (
         <>
             <div id="map-container">
@@ -61,12 +36,12 @@ export const Map = () => {
                                 <Marker
                                     key={event._id}
                                     position={event.coordinates}
-                                    icon={new optionsIcon({ iconUrl: `/src/assets/images/icons/${event.category}.svg` })} >
+                                    icon={new optionsIcon({ iconUrl: `/src/assets/images/icons/${event.category.icon}.svg` })} >
                                     <Popup>
                                         <Card>
                                             <CardHeader>
                                                 <CardTitle>{event.place}</CardTitle>
-                                                <CardDescription>{event.event} organisé par {event.organizers.map((organizer) => (<span key={organizer._id}>{organizer.name}</span>))}</CardDescription>
+                                                <CardDescription>{event.event} <br />organisé par {event.organizers.map((organizer) => (<span key={organizer._id}>{organizer.name}</span>))}</CardDescription>
                                             </CardHeader>
                                             <CardContent>
                                                 <p>{event.description}</p>
@@ -74,7 +49,7 @@ export const Map = () => {
                                                 <p>Date de fin : {new Date(event.dateEnd * 1000).toLocaleDateString('fr-FR')}</p>
                                             </CardContent>
                                             <CardFooter>
-                                                <Link state={event} to={`/event/${event.category}/${event.place.replace(/\s+/g, '')}`}>
+                                                <Link state={event} to={`/event/${event.organizers[0].name.replace(/\s+/g, '')}/${event.place.replace(/\s+/g, '')}`}>
                                                     <Button>Voir plus</Button>
                                                 </Link>
                                             </CardFooter>
@@ -85,7 +60,7 @@ export const Map = () => {
                         }
                     </MarkerClusterGroup>
                 </MapContainer>
-            </div>
+            </div >
         </>
     )
 }

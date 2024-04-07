@@ -2,6 +2,7 @@ import mongoose from "mongoose"
 import { Event } from "../../models/event.js"
 import { User } from "../../models/user.js"
 import { Organizer } from "../../models/organizer.js"
+import { Category } from "../../models/category.js"
 
 export const Query = {
     events: async (parent, args, context, info) => {
@@ -68,15 +69,26 @@ export const Query = {
         }
     },
     organizerById: async (parent, args, context, info) => {
-        console.log(args)
         try {
             const id = new mongoose.Types.ObjectId(args.id)
-            console.log(id)
             const organizer = await Organizer.findById(id).exec()
             if (!organizer) {
                 throw new Error("Organizer ID not found")
             }
             return organizer
+        } catch (error) {
+            throw error
+        }
+    },
+    categories: async (parent, args, context, info) => {
+        try {
+            const dbCategory = await Category.find()
+            return dbCategory.map(category => {
+                return {
+                    ...category._doc,
+                    _id: category.id
+                }
+            })
         } catch (error) {
             throw error
         }

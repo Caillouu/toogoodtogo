@@ -12,16 +12,15 @@ import { Error } from './pages/Error'
 import { Organizer } from './pages/Organizer'
 // @ts-ignore
 import { Event } from './pages/Event'
+// @ts-ignore
 import { PrivateRoutes } from './utils/PrivateRoutes';
-import { Account } from './pages/Account';
-import { useState } from 'react';
+// @ts-ignore
+import { Account } from './pages/Account'
 
 axios.defaults.baseURL = 'http://localhost:8000'
 axios.defaults.withCredentials = true
 
 function App() {
-    const [user, setUser] = useState(true)
-
     return (
         <UserContextProvider>
             <ToastContainer
@@ -39,7 +38,7 @@ function App() {
             ></ToastContainer>
             <Header />
             <Routes>
-                <Route element={<PrivateRoutes user={user} />}>
+                <Route element={<PrivateRoutes />}>
                     <Route path='/account' element={<Account />} />
                 </Route>
                 <Route path='/' element={<Home />} />

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui-custom/password-input"
-import { useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Separator } from "@/components/ui/separator"
 import { ChevronsDownUp } from 'lucide-react';
 import {
@@ -24,49 +24,168 @@ import {
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { PhoneInput } from "@/components/ui-custom/phone-input";
 import { Progress } from "@/components/ui/progress"
+import { gql, useQuery } from "@apollo/client"
+import { UserContext } from "@/context/userContext"
+import axios from "axios"
+import { toast } from "react-toastify"
+import { useNavigate } from "react-router-dom"
+
+
 
 const formSchema = z.object({
-    username: z.string().min(2, {
-        message: "Username must be at least 2 characters.",
+    name: z.string().refine((value) => value.length > 0, {
+        message: "Name is required"
+    }),
+    email: z.string().email({
+        message: "Invalid email"
+    }),
+    file: z
+        .any()
+        .refine((file) => file?.length == 1, 'File is required.')
+        .refine((file) => file[0]?.size <= 3000000, `Max file size is 3MB.`),
+    adress: z.string().refine((value) => value.length > 0, {
+        message: "Adresse is required"
     }),
     phone: z.string().refine(isValidPhoneNumber, {
         message: "Invalid phone number"
     }),
+    password: z.string().min(6, {
+        message: "Password must be at least 6 characters."
+    }).optional().or(z.literal('')),
+    confirmPassword: z.string().min(6, {
+        message: "Password must be at least 6 characters."
+    }).optional().or(z.literal(''))
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"]
 })
 
+
+const GET_USER = gql`
+    query UserById($userByIdId: String) {
+        userById(id: $userByIdId) {
+        name
+        email
+        adress
+        phone
+        createdAt
+        }
+    }
+`;
+
 export const Infos = () => {
+    const navigate = useNavigate()
+    const [percent, setPercent] = useState(0)
     const [isOpen, setIsOpen] = useState(false)
     const [currentPassword, setCurrentPassword] = useState("")
     const [password, setPassword] = useState("")
-    const [passwordConfirmation, setPasswordConfirmation] = useState("")
-    const form = useForm({
+    const [confirmPassword, setConfirmPassword] = useState("")
+
+    const { user } = useContext(UserContext)
+    const { data } = useQuery(GET_USER, {
+        variables: {
+            userByIdId: user?.id
+        }
+    });
+
+    const { reset, ...form } = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            username: "Caillou",
-            email: "caillou@caillou.fr",
-            adresse: "12 rue des fleurs 93200 Saint-Denis",
-            phone: "01 23 45 67 89"
+            name: "",
+            email: "",
+            file: undefined,
+            adress: "",
+            phone: "",
+            password: "",
+            confirmPassword: ""
         },
     })
 
-    function onSubmit(values) {
-        console.log(values)
+    useEffect(() => {
+        reset({
+            name: data?.userById.name,
+            email: data?.userById.email,
+            file: undefined,
+            adress: data?.userById.adress || "",
+            phone: data?.userById.phone || "",
+            password: "",
+            confirmPassword: ""
+        })
+    }, [data])
+
+    useEffect(() => {
+        setPercent(0)
+        const obj = form.formState.defaultValues
+        // delete confirmPassword and Password to profil percent
+        const cloneObj = (({ confirmPassword, password, ...o }) => o)(obj)
+        Object.values(cloneObj).forEach((value) => {
+            if (value !== "") {
+                setPercent((prevState) => {
+                    return prevState + 1 / Object.values(cloneObj).length * 100
+                })
+            }
+        })
+    }, [form.formState.defaultValues])
+
+    const onSubmit = async (values) => {
+        const { name, email, adress, phone, confirmPassword, password } = values
+        const id = user.id
+        if (currentPassword !== "" || password !== "") {
+            try {
+                const { data } = await axios.post('/updateProfile', { id, name, email, adress, phone, currentPassword, confirmPassword, password })
+                if (data.msgError) {
+                    toast.error(data.msgError)
+                } else {
+                    toast.success('Modifications et mot de passe enregistrées !')
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        } else {
+            try {
+                const { data } = await axios.post('/updateProfile', { id, name, email, adress, phone })
+                if (data.msgError) {
+                    toast.error(data.msgError)
+                } else {
+                    toast.success('Modifications enregistrées !')
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    }
+
+    const logout = async () => {
+        try {
+            const { data } = await axios.post('/logout')
+            if (data.msgError) {
+                toast.error(data.msgError)
+            } else {
+                navigate(0)
+            }
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     return (
         <>
-            <h2>Mon profil est renseigné à :</h2>
-            <Progress value={33} />
+            <div className="flex justify-end">
+                <Button onClick={() => logout()}>Se déconnecter</Button>
+            </div>
+            <h2>Mon profil est renseigné à {percent} % :</h2>
+            <span>Membre depuis le {new Date(parseInt(data?.userById.createdAt)).toLocaleDateString("fr-FR")}</span>
+            <Progress value={percent} />
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField
                         control={form.control}
-                        name="username"
+                        name="name"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Username</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="username" flagcomponent="FR" disabled {...field} />
+                                    <Input disabled {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -79,7 +198,7 @@ export const Infos = () => {
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="email" disabled {...field} />
+                                    <Input disabled {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -87,7 +206,7 @@ export const Infos = () => {
                     />
                     <FormField
                         control={form.control}
-                        name="adresse"
+                        name="adress"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Adresse</FormLabel>
@@ -106,7 +225,7 @@ export const Infos = () => {
                             <FormItem className="flex flex-col items-start">
                                 <FormLabel className="text-left">Phone Number</FormLabel>
                                 <FormControl className="w-full">
-                                    <PhoneInput placeholder="Enter a phone number" {...field} />
+                                    <PhoneInput {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -141,13 +260,14 @@ export const Infos = () => {
                                                 id="current_password"
                                                 value={currentPassword}
                                                 onChange={(e) => setCurrentPassword(e.target.value)}
-                                                autoComplete="current-password"
+                                                autoComplete="password"
                                             />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+
                             <FormField
                                 control={form.control}
                                 name="password"
@@ -156,10 +276,10 @@ export const Infos = () => {
                                         <FormLabel>New password</FormLabel>
                                         <FormControl>
                                             <PasswordInput
-                                                id="password"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
-                                                autoComplete="new-password"
+                                                autoComplete="password"
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -168,16 +288,16 @@ export const Infos = () => {
                             />
                             <FormField
                                 control={form.control}
-                                name="password_confirmation"
+                                name="confirmPassword"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Confirm new password</FormLabel>
                                         <FormControl>
                                             <PasswordInput
-                                                id="password_confirmation"
-                                                value={passwordConfirmation}
-                                                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                                                autoComplete="new-password"
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                                autoComplete="password"
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />

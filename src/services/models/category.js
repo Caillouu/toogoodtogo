@@ -2,22 +2,22 @@ import mongoose from "mongoose"
 
 const Schema = mongoose.Schema
 
-const organizerSchema = new Schema(
+const categorySchema = new Schema(
     {
+        icon: {
+            type: String,
+            required: true,
+        },
         name: {
             type: String,
             required: true,
         },
-        email: {
+        description: {
             type: String,
             required: true,
-        },
-        events: {
-            type: Array,
-            ref: 'Event'
         }
     },
     { timestamps: true }
 )
 
-export const Organizer = mongoose.model("Organizer", organizerSchema)
+export const Category = mongoose.model("Category", categorySchema)

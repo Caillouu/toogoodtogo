@@ -17,30 +17,31 @@ const eventSchema = new Schema(
       ref: 'Organizer'
     },
     dateStart: {
-        type: Number,
-        required: true,
+      type: Number,
+      required: true,
     },
     dateEnd: {
-        type: Number,
-        required: true,
+      type: Number,
+      required: true,
     },
     category: {
-        type: String,
-        required: true,
+      type: Object,
+      ref: 'Category',
+      required: true,
     },
     description: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     coordinates: {
-        type: [Number],
-        required: true,
+      type: [Number],
+      required: true,
     },
     status: {
-        type: String,
-        enum: ['WAITING', 'PENDING', 'DONE'],
-        default: 'WAITING',
-        required: true
+      type: String,
+      enum: ['WAITING', 'PENDING', 'DONE'],
+      default: 'WAITING',
+      required: true
     }
   },
   { timestamps: true }

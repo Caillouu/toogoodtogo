@@ -10,24 +10,24 @@ interface Props {
 }
 
 interface User {
-    _id : string
-    name : string
-    email : string
+    _id: string
+    name: string
+    email: string
 }
 
-export function UserContextProvider({children}: Props) {
+export function UserContextProvider({ children }: Props) {
     const [user, setUser] = useState<User | null>(null)
 
     useEffect(() => {
-        if(!user) {
+        if (!user) {
             axios.get('/profile').then(res => {
                 setUser(res.data)
             })
         }
-    }, [])
-    
+    }, [user])
+
     return (
-        <UserContext.Provider value={{user, setUser}}>
+        <UserContext.Provider value={{ user, setUser }}>
             {children}
         </UserContext.Provider>
     )

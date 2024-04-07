@@ -1,4 +1,4 @@
-import { Link, useLocation, useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import {
     Card,
     CardContent,
@@ -10,42 +10,35 @@ import {
 import { Button } from "@/components/ui/button"
 import { gql, useQuery } from "@apollo/client";
 
-
-export const Organizer = () => {
-    const { state } = useLocation();
-    console.log(state)
-    const GET_ORGANIZER = gql`
-    query OrganizerById($organizerByIdId: String) {
-        organizerById(id: $organizerByIdId) {
-          _id
-          name
-          email
-          events {
+const GET_ORGANIZER = gql`
+query OrganizerById($organizerByIdId: String) {
+    organizerById(id: $organizerByIdId) {
+      _id
+      name
+      email
+      events {
+        _id
+        place
+        event
+        dateStart
+        dateEnd
+        organizers {
             _id
-            place
-            event
-            organizers {
-              _id
-              name
-              email
-            }
-            dateStart
-            dateEnd
-            category
-            description
-            coordinates
-            status
-          }
+            name
         }
       }
-    `;
+    }
+  }
+`;
+
+export const Organizer = () => {
+    const params = useParams()
     const { data } = useQuery(GET_ORGANIZER, {
         variables: {
-            organizerByIdId: "65f184f8c7c380d2e59203bf"
+            organizerByIdId: params.organizer
         }
     });
 
-    console.log(data)
 
     return (
         <>
@@ -63,7 +56,7 @@ export const Organizer = () => {
                             <p>Date de fin : {new Date(event.dateEnd * 1000).toLocaleDateString('fr-FR')}</p>
                         </CardContent>
                         <CardFooter>
-                            <Link state={event} to={`/event/${event.category}/${event.place.replace(/\s+/g, '')}`}>
+                            <Link state={event} to={`/event/${event.organizers[0].name.replace(/\s+/g, '')}/${event.place.replace(/\s+/g, '')}`}>
                                 <Button>Voir plus</Button>
                             </Link>
                         </CardFooter>

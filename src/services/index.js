@@ -11,7 +11,7 @@ import 'dotenv/config';
 import cors from 'cors';
 import { mongoose } from 'mongoose';
 import cookieParser from 'cookie-parser';
-import {authRoutes} from './routes/authRoutes.js' 
+import { router } from './routes/authRoutes.js'
 
 const app = express();
 
@@ -19,13 +19,13 @@ const app = express();
 // database connexion
 const uri = `mongodb+srv://${process.env.REACT_APP_MONGO_USER}:${process.env.REACT_APP_MONGO_PASSWORD}@cluster0.ccy4dil.mongodb.net/${process.env.REACT_APP_MONGO_DB}?retryWrites=true&w=majority`
 mongoose
-.connect(uri, {})
-.then(() => {
-    console.log(`🚀 DATABASE CONNECTED`);
-})
-.catch(err => {
-    console.log(err.message);
-});
+    .connect(uri, {})
+    .then(() => {
+        console.log(`🚀 DATABASE CONNECTED`);
+    })
+    .catch(err => {
+        console.log(err.message);
+    });
 
 
 // Création AppolloServer
@@ -43,20 +43,30 @@ const server = new ApolloServer({
     resolvers
 })
 
-const { url } = await startStandaloneServer(server, {listen: { port: 4000 } })
+const { url } = await startStandaloneServer(server, { listen: { port: 4000 } })
 console.log(`🚀 AppolloServer ready at ${url}`)
 
 // middleware
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: [
+        'http://localhost:5173'
+    ]
+}));
 app.use(express.json())
 // JWT Json Web Token
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }));
 
 // app.use('/', require('./routes/authRoutes'))
-app.use('/', authRoutes)
+app.use('/', router)
 
 const port = 8000
 app.listen(port, () => {
     console.log(`🚀 Server started on port ${port}`)
+})
+
+app.get('/profile', function (req, res) {
+    // res.header("Access-Control-Allow-Origin", "*");
+    res.send('Hello World');
 })

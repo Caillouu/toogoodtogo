@@ -10,9 +10,9 @@ type Event {
     place: String!
     event: String!
     organizers: [Organizer]!
+    category: Category!
     dateStart: Int!
     dateEnd: Int!
-    category: String!
     description: String!
     coordinates: [Float]!
     status: EventStatusEnum!
@@ -23,6 +23,9 @@ type User {
     _id: String!
     name: String!
     email: String!
+    adress: String
+    phone: String
+    createdAt: String!
     events: [Event]
 }
 
@@ -33,6 +36,13 @@ type Organizer {
     events: [Event]
 }
 
+type Category {
+    _id: String!
+    icon: String!
+    name: String!
+    description: String!
+}
+
 type Query {
     events: [Event]!
     eventById(id: String): Event!
@@ -40,6 +50,7 @@ type Query {
     userById(id: String): User!
     organizers: [Organizer]!
     organizerById(id: String): Organizer!
+    categories: [Category]!
 }
 
 type Mutation {

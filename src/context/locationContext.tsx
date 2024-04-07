@@ -12,7 +12,7 @@ export const LocationContext = createContext({})
 
 export const LocationContextProvider = React.memo(({ children }: Props) => {
     const location = useGeolocation();
-    console.log('LocationContext')
+    // console.log('LocationContext')
 
 
     if (location.loading) {
